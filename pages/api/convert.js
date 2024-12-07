@@ -4,6 +4,8 @@ const axios = require("axios");
 module.exports = async (req, res) => {
   const url = req.query.url;
   const target = req.query.target;
+  const enableUDP = req.query.udp;
+  console.log(`udp: ${enableUDP}`);
   console.log(`query: ${JSON.stringify(req.query)}`);
   if (url === undefined) {
     res.status(400).send("Missing parameter: url");
@@ -112,11 +114,21 @@ module.exports = async (req, res) => {
       }
     });
     const proxies = surgeProxies.filter((p) => p !== undefined);
-    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.setHeader("Content-Type", "text/plain; charset=utf-8");
     res.status(200).send(proxies.join("\n"));
   } else {
-    const response = YAML.stringify({ proxies: config.proxies });
-    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    const response = YAML.stringify({
+      proxies: config.proxies.map((proxy) => {
+        if (proxy.type === "ss") {
+          if (enableUDP) {
+            console.log(`Enable UDP for ${proxy.name}`);
+            proxy["udp"] = enableUDP;
+          }
+        }
+        return proxy;
+      }),
+    });
+    res.setHeader("Content-Type", "text/plain; charset=utf-8");
     res.status(200).send(response);
   }
 };
