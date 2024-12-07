@@ -121,8 +121,10 @@ module.exports = async (req, res) => {
       proxies: config.proxies.map((proxy) => {
         if (proxy.type === "ss") {
           if (enableUDP) {
-            console.log(`Enable UDP for ${proxy.name}`);
-            proxy["udp"] = enableUDP;
+            console.log(
+              `Configure UDP: ${stringToBoolean(enableUDP)} for ${proxy.name}`
+            );
+            proxy["udp"] = stringToBoolean(enableUDP);
           }
         }
         return proxy;
@@ -130,5 +132,21 @@ module.exports = async (req, res) => {
     });
     res.setHeader("Content-Type", "text/plain; charset=utf-8");
     res.status(200).send(response);
+  }
+};
+
+const stringToBoolean = (value) => {
+  switch(value.toLowerCase().trim()){
+    case "true": 
+    case "yes": 
+    case "1": 
+      return true;
+    case "false": 
+    case "no": 
+    case "0": 
+    case null: 
+      return false;
+    default: 
+      return Boolean(value);
   }
 };
